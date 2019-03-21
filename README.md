@@ -1,2 +1,2 @@
-# Cathy
+# JalMusic
 Music Player
