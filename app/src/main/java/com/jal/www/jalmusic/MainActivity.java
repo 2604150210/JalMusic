@@ -16,9 +16,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         listView = (ListView) this.findViewById(R.id.listView1);
         List<Music> listMusic = MusicList.getMusicData(getApplicationContext());
-        for (Music music : listMusic){
-            System.out.println(music);
-        }
         MusicAdapter adapter = new MusicAdapter(this, listMusic);
         listView.setAdapter(adapter);
     }
