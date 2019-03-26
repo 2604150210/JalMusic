@@ -1,6 +1,8 @@
 package com.jal.www.jalmusic;
 
-public  class Music {
+import java.io.Serializable;
+
+public  class Music implements Serializable {
     private String title;
     private String singer;
     private String album;
