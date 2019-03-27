@@ -1,9 +1,12 @@
 package com.jal.www.jalmusic;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.io.Serializable;
 import java.util.Objects;
 
-public  class Music implements Serializable {
+public  class Music implements Parcelable {
     private String title;
     private String singer;
     private String album;
@@ -11,6 +14,29 @@ public  class Music implements Serializable {
     private long size;
     private long time;
     private String name;
+    public Music(){};
+    protected Music(Parcel in) {
+        title = in.readString();
+        singer = in.readString();
+        album = in.readString();
+        url = in.readString();
+        size = in.readLong();
+        time = in.readLong();
+        name = in.readString();
+    }
+
+    public static final Creator<Music> CREATOR = new Creator<Music>() {
+        @Override
+        public Music createFromParcel(Parcel in) {
+            return new Music(in);
+        }
+
+        @Override
+        public Music[] newArray(int size) {
+            return new Music[size];
+        }
+    };
+
     public String getName()
     {
     return name;
@@ -93,4 +119,19 @@ public  class Music implements Serializable {
                 name.equals(music.name);
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(title);
+        dest.writeString(singer);
+        dest.writeString(album);
+        dest.writeString(url);
+        dest.writeLong(size);
+        dest.writeLong(time);
+        dest.writeString(name);
+    }
 }

@@ -19,6 +19,9 @@ import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.TextView;
+
+import java.text.DateFormat;
 
 public class DetailsActivity extends AppCompatActivity implements View.OnClickListener {
     private MyConnection conn;
@@ -26,16 +29,19 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     private Button btn_play;
     private Button btn_next;
     private SeekBar seekBar;
+    private ImageView imageView;
+    private TextView tv_title,tv_cur_time,tv_total_time;
     private MusicService.MyBinder musicControl;
-    private static final int UPDATE_PROGRESS = 0;
+    private static final int UPDATE_UI = 0;
     private AudioManager audioManager;
+    private Animation animation;
     //使用handler定时更新进度条
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case UPDATE_PROGRESS:
-                    updateProgress();
+                case UPDATE_UI:
+                    updateUI();
                     break;
             }
         }
@@ -46,17 +52,18 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         setContentView(R.layout.activity_details);
         audioManager =(AudioManager)getSystemService(Context.AUDIO_SERVICE);
 
-        Intent intent3 = new Intent(this, MusicService.class);
+        Intent intent = new Intent(this, MusicService.class);
         Bundle bundle = getIntent().getExtras();
-        intent3.putExtras(bundle);
+        intent.putExtras(bundle);
         conn = new MyConnection();//使用混合的方法开启服务，
-        startService(intent3);
-        bindService(intent3, conn, BIND_AUTO_CREATE);
-        ImageView imageView = (ImageView) findViewById(R.id.imageview);//动画
-        Animation animation = AnimationUtils.loadAnimation(this, R.anim.img_animation);
+        startService(intent);
+        bindService(intent, conn, BIND_AUTO_CREATE);
+        imageView = (ImageView) findViewById(R.id.imageview);//动画
+        animation = AnimationUtils.loadAnimation(this, R.anim.img_animation);
         LinearInterpolator lin = new LinearInterpolator();//设置动画匀速运动
         animation.setInterpolator(lin);
         imageView.startAnimation(animation);
+
         bindViews();
     }
 
@@ -65,7 +72,9 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         btn_play = (Button) findViewById(R.id.btn_play);
         btn_next = (Button) findViewById(R.id.btn_next);
         seekBar = (SeekBar) findViewById(R.id.sb);
-
+        tv_title = (TextView) findViewById(R.id.tv_title);
+        tv_cur_time = (TextView)findViewById(R.id.tv_cur_time);
+        tv_total_time = (TextView)findViewById(R.id.tv_total_time);
         btn_pre.setOnClickListener(this);
         btn_play.setOnClickListener(this);
         btn_next.setOnClickListener(this);
@@ -97,6 +106,12 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
             case R.id.btn_play:
                 play(v);
                 break;
+            case R.id.btn_next:
+                next(v);
+                break;
+            case R.id.btn_pre:
+                pre(v);
+                break;
         }
     }
     private String TAG = "DetailsActivity";
@@ -110,11 +125,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
             //获得service中的MyBinder
             musicControl = (MusicService.MyBinder) service;
             //更新按钮的文字
-            updatePlayText();
-            //设置进度条的最大值
-            seekBar.setMax(musicControl.getDuration());
-            //设置进度条的进度
-            seekBar.setProgress(musicControl.getCurrenPostion());
+            updateUI();
         }
 
         @Override
@@ -129,7 +140,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         super.onResume();
         //进入到界面后开始更新进度条
         if (musicControl != null) {
-            handler.sendEmptyMessage(UPDATE_PROGRESS);
+            handler.sendEmptyMessage(UPDATE_UI);
         }
     }
 
@@ -151,17 +162,16 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     private void updateProgress() {
         int currenPostion = musicControl.getCurrenPostion();
         seekBar.setProgress(currenPostion);
-        //使用Handler每500毫秒更新一次进度条
-        handler.sendEmptyMessageDelayed(UPDATE_PROGRESS, 500);
     }
 
 
     //更新按钮的文字
     public void updatePlayText() {
         if (musicControl.isPlaying()) {
+            imageView.startAnimation(animation);
             btn_play.setText("暂停");
-            handler.sendEmptyMessage(UPDATE_PROGRESS);
         } else {
+            imageView.clearAnimation();
             btn_play.setText("播放");
         }
     }
@@ -170,5 +180,41 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     public void play(View view) {
         musicControl.play();
         updatePlayText();
+    }
+
+    //调用MyBinder中的next()方法
+    public void next(View view) {
+        musicControl.next(1);
+        updatePlayText();
+    }
+
+    //调用MyBinder中的next()方法
+    public void pre(View view) {
+        musicControl.next(-1);
+        updatePlayText();
+    }
+
+    public void updateUI(){
+
+        //设置进度条的最大值
+        int cur_time = musicControl.getCurrenPostion(), total_time = musicControl.getDuration();
+        seekBar.setMax(total_time);
+        //设置进度条的进度
+        seekBar.setProgress(cur_time);
+
+        tv_title.setText(musicControl.getTitle());
+
+        tv_cur_time.setText(timeToString(cur_time));
+        tv_total_time.setText(timeToString(total_time));
+
+        updateProgress();
+
+        //使用Handler每500毫秒更新一次进度条
+        handler.sendEmptyMessageDelayed(UPDATE_UI, 500);
+    }
+
+    private String timeToString(int time) {
+        time /= 1000;
+        return String.format("%02d:%02d",time/60,time%60);
     }
 }

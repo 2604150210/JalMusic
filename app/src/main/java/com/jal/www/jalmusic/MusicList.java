@@ -10,8 +10,8 @@ import android.database.Cursor;
 import android.provider.MediaStore;
 
 public class MusicList {
-    public static List<Music> getMusicData(Context context) {
-        List<Music> musicList = new ArrayList<Music>();
+    public static ArrayList<Music> getMusicData(Context context) {
+        ArrayList<Music> musicList = new ArrayList<Music>();
         ContentResolver cr = context.getContentResolver();
         if (cr != null) {
             // 获取所有歌曲

@@ -1,6 +1,7 @@
 package com.jal.www.jalmusic;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -8,18 +9,21 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
-
-import static android.content.Intent.getIntent;
+import java.util.ArrayList;
 
 public class MusicService extends Service {
     private String path = "";
-    private String TAG = "MusicService";
+    private String TAG = "MusicServiceLog";
     private MediaPlayer player;
-    private static MediaPlayer lastPlayer;
-    private static Music lastMusic;
+    static MediaPlayer lastPlayer;
+    static Music lastMusic;
     private Music music;
+    private ArrayList<Music>listMusic;
+    private Context mContext;
+    private int position;
     @Override
     public IBinder onBind(Intent intent) {
 
@@ -30,53 +34,55 @@ public class MusicService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
+        mContext = getApplicationContext();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Bundle bundle = intent.getExtras();
-        music = (Music) bundle.getSerializable("music");
-        path = music.getUrl();
-        System.out.println(path);
-        if (lastPlayer == null || lastMusic == null){
-            player = new MediaPlayer();//这里只执行一次，用于准备播放器
-            lastPlayer = player;
-            lastMusic = music;
-            player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            try {
-                System.out.println(path);
-                player.setDataSource(path);
-                //准备资源
-                player.prepare();
-                player.start();
-            } catch (IOException e) {
-                Log.i(TAG,"ERROR");
-                e.printStackTrace();
-            }
-            Log.i(TAG, "准备播放音乐");
-        }else if(lastMusic.equals(music)){
-            player = lastPlayer;
+        listMusic =  bundle.getParcelableArrayList("listMusic");
+        position = bundle.getInt("position");
+        Log.i(TAG,"position:"+position);
+        music = listMusic.get(position);
+        if (lastPlayer == null || lastMusic == null || !lastMusic.equals(music)){
+            prepare();
         }else{
-            lastPlayer.stop();
-            lastPlayer.release();
-            player = new MediaPlayer();//这里只执行一次，用于准备播放器
-            lastPlayer = player;
-            lastMusic = music;
-            player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            try {
-                System.out.println(path);
-                player.setDataSource(path);
-                //准备资源
-                player.prepare();
-                player.start();
-            } catch (IOException e) {
-                Log.i(TAG,"ERROR");
-                e.printStackTrace();
-            }
-            Log.i(TAG, "准备播放音乐");
+            player = lastPlayer;
         }
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    void prepare(){
+        path = music.getUrl();
+        Log.i(TAG,"path:"+path);
+        player = new MediaPlayer();//这里只执行一次，用于准备播放器
+        if (lastPlayer!=null){
+            lastPlayer.stop();
+            lastPlayer.release();
+        }
+        lastPlayer = player;
+        lastMusic = music;
+        player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        try {
+            Log.i(TAG,path);
+            player.setDataSource(path); //准备资源
+            player.prepare();
+            player.start();
+            Log.i(TAG, "准备播放音乐");
+        } catch (IOException e) {
+            Log.i(TAG,"ERROR");
+            e.printStackTrace();
+        }
+        player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                Toast.makeText(mContext, "自动为您切换下一首", Toast.LENGTH_SHORT).show();
+                position+=1;
+                position = (position + listMusic.size())%listMusic.size();
+                music = listMusic.get(position);
+                prepare();
+            }
+        });
     }
 
     //该方法包含关于歌曲的操作
@@ -98,10 +104,23 @@ public class MusicService extends Service {
             }
         }
 
+        //播放下一曲
+        public void next(int type){
+            position+=type;
+            position = (position + listMusic.size())%listMusic.size();
+            music = listMusic.get(position);
+            prepare();
+        }
+
         //返回歌曲的长度，单位为毫秒
         public int getDuration(){
             Log.i(TAG, "歌曲长度"+player.getDuration());
             return player.getDuration();
+        }
+
+        //返回歌曲的标题
+        public String getTitle(){
+            return "           "+music.getTitle() + "        " + music.getSinger();
         }
 
         //返回歌曲目前的进度，单位为毫秒
