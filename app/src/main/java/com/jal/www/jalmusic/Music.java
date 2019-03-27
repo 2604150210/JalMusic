@@ -1,6 +1,7 @@
 package com.jal.www.jalmusic;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public  class Music implements Serializable {
     private String title;
@@ -79,4 +80,17 @@ public  class Music implements Serializable {
                 ", name='" + name + '\'' +
                 '}';
     }
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Music music = (Music) o;
+        return size == music.size &&
+                time == music.time &&
+                title .equals( music.title)&&
+                album.equals(music.album)&&
+                url.equals(music.url)&&
+                name.equals(music.name);
+    }
+
 }

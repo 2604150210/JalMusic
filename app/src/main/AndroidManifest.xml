@@ -2,11 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.jal.www.jalmusic">
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/jalmusic"
+        android:icon="@mipmap/zjalmusic"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/jalmusic"
+        android:roundIcon="@mipmap/zjalmusic"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
@@ -16,11 +18,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".DetailsActivity" />
+
         <receiver android:name=".MyReceiver">
             <intent-filter>
-                <action android:name="com.jal.www.jalmusic.LAUNCH"/>
+                <action android:name="com.jal.www.jalmusic.LAUNCH" />
             </intent-filter>
         </receiver>
+
+        <service
+            android:name=".MusicService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
 </manifest>

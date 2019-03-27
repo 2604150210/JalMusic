@@ -16,6 +16,14 @@
             android:layout_height="wrap_content" />
     </LinearLayout>
     <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <SeekBar
+            android:id="@+id/sb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+    <LinearLayout
         android:orientation="horizontal"
         android:layout_gravity="center"
         android:layout_width="wrap_content"
@@ -37,14 +45,10 @@
             android:layout_height="wrap_content" />
         <Button
             android:id="@+id/btn_play"
-            android:text="播放"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-        <Button
-            android:id="@+id/btn_stop"
-            android:text="暂停"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="play"
+            android:text="播放" />
         <Button
             android:id="@+id/btn_next"
             android:text="下一曲"
