@@ -44,6 +44,7 @@ public class MusicService extends Service {
         position = bundle.getInt("position");
         Log.i(TAG,"position:"+position);
         music = listMusic.get(position);
+        Log.i(TAG, music.toString());
         if (lastPlayer == null || lastMusic == null || !lastMusic.equals(music)){
             prepare();
         }else{
@@ -76,10 +77,10 @@ public class MusicService extends Service {
         player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                Toast.makeText(mContext, "自动为您切换下一首", Toast.LENGTH_SHORT).show();
                 position+=1;
                 position = (position + listMusic.size())%listMusic.size();
                 music = listMusic.get(position);
+                Toast.makeText(mContext, "自动为您切换下一首:"+music.getName(), Toast.LENGTH_SHORT).show();
                 prepare();
             }
         });
@@ -114,13 +115,13 @@ public class MusicService extends Service {
 
         //返回歌曲的长度，单位为毫秒
         public int getDuration(){
-            Log.i(TAG, "歌曲长度"+player.getDuration());
+//            Log.i(TAG, "歌曲长度"+player.getDuration());
             return player.getDuration();
         }
 
         //返回歌曲的标题
-        public String getTitle(){
-            return "           "+music.getTitle() + "        " + music.getSinger();
+        public String getName(){
+            return music.getName();
         }
 
         //返回歌曲目前的进度，单位为毫秒

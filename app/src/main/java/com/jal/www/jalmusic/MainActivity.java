@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -18,8 +19,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private ListView listView;
-    private TextView tv_main_singer;
-    private RelativeLayout rl_cur_music;
+    private LinearLayout cur_music;
     private Context mContext;
     private TextView tv_main_title;
     private ArrayList<Music> listMusic;
@@ -44,14 +44,12 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        rl_cur_music = findViewById(R.id.rl_cur_music);
+        cur_music = findViewById(R.id.cur_music);
         if (MusicService.lastPlayer != null && MusicService.lastMusic != null){
-            rl_cur_music.setVisibility(View.VISIBLE);
+            cur_music.setVisibility(View.VISIBLE);
             tv_main_title = findViewById(R.id.tv_main_title);
-            tv_main_singer = findViewById(R.id.tv_main_singer);
-            tv_main_title.setText(MusicService.lastMusic.getTitle());
-            tv_main_singer.setText(MusicService.lastMusic.getSinger());
-            rl_cur_music.setOnClickListener(new View.OnClickListener() {
+            tv_main_title.setText(MusicService.lastMusic.getName());
+            cur_music.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Bundle bundle = new Bundle();
@@ -65,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }else{
-            rl_cur_music.setVisibility(View.GONE);
+            cur_music.setVisibility(View.GONE);
         }
 
     }
@@ -80,12 +78,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         if (MusicService.lastPlayer != null && MusicService.lastMusic != null){
-            rl_cur_music.setVisibility(View.VISIBLE);
+            cur_music.setVisibility(View.VISIBLE);
             tv_main_title = findViewById(R.id.tv_main_title);
-            tv_main_singer = findViewById(R.id.tv_main_singer);
-            tv_main_title.setText(MusicService.lastMusic.getTitle());
-            tv_main_singer.setText(MusicService.lastMusic.getSinger());
-            rl_cur_music.setOnClickListener(new View.OnClickListener() {
+            tv_main_title.setText(MusicService.lastMusic.getName());
+            cur_music.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Bundle bundle = new Bundle();
@@ -100,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }else{
-            rl_cur_music.setVisibility(View.GONE);
+            cur_music.setVisibility(View.GONE);
         }
         super.onResume();
     }

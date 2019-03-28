@@ -11,34 +11,29 @@
         android:layout_weight="5">
     </ListView>
 
-    <RelativeLayout
-        android:id="@+id/rl_cur_music"
+    <LinearLayout
+        android:id="@+id/cur_music"
         android:layout_weight="1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:orientation="horizontal"
         android:background="@drawable/txt_rectborder"
 
         tools:ignore="OnClick">
         <ImageView
+            android:layout_weight="1"
             android:src="@mipmap/jalmusic"
             android:id="@+id/img_main_small_logo"
-            android:layout_width="100dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content" />
         <TextView
-            android:layout_centerVertical="true"
+            android:gravity="center"
             android:id="@+id/tv_main_title"
-            android:textSize="28sp"
-            android:layout_centerInParent="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-        <TextView
-            android:layout_centerVertical="true"
-            android:id="@+id/tv_main_singer"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:textSize="23sp"
+            android:layout_weight="3"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
 
-    </RelativeLayout>
+    </LinearLayout>
 
 </LinearLayout>
