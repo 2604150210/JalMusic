@@ -12,11 +12,13 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -29,6 +31,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     private Button btn_pre;
     private Button btn_play;
     private Button btn_next;
+    private ImageView btn_return;
     private SeekBar seekBar;
     private MusicButton imageView;
     private TextView tv_title,tv_cur_time,tv_total_time;
@@ -60,10 +63,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         startService(intent);
         bindService(intent, conn, BIND_AUTO_CREATE);
         imageView = (MusicButton) findViewById(R.id.imageview);//动画
-//        animation = AnimationUtils.loadAnimation(this, R.anim.img_animation);
-//        LinearInterpolator lin = new LinearInterpolator();//设置动画匀速运动
-//        animation.setInterpolator(lin);
-//        imageView.startAnimation(animation);
         bindViews();
     }
 
@@ -71,6 +70,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         btn_pre = (Button) findViewById(R.id.btn_pre);
         btn_play = (Button) findViewById(R.id.btn_play);
         btn_next = (Button) findViewById(R.id.btn_next);
+        btn_return = (ImageView) findViewById(R.id.btn_return);
         seekBar = (SeekBar) findViewById(R.id.sb);
         tv_title = (TextView) findViewById(R.id.tv_title);
         tv_cur_time = (TextView)findViewById(R.id.tv_cur_time);
@@ -79,6 +79,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         btn_play.setOnClickListener(this);
         btn_next.setOnClickListener(this);
         imageView.setOnClickListener(this);
+        btn_return.setOnClickListener(this);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -100,6 +101,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         });
     }
 
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -112,6 +114,9 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
                 break;
             case R.id.btn_pre:
                 pre(v);
+                break;
+            case R.id.btn_return:
+                finish();
                 break;
         }
     }
