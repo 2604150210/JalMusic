@@ -6,9 +6,9 @@
     <!-- 渐变 -->
     <gradient
         android:angle="90"
-        android:endColor="#d2d2ff"
+        android:endColor="#ffd6df"
         android:centerColor="#ffffff"
-        android:startColor="#d2d2ff" />
+        android:startColor="#ffd6df" />
     <!-- 设置一下边距,让空间大一点 -->
     <padding
         android:left="15dp"
