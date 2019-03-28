@@ -1,20 +1,18 @@
 package com.jal.www.jalmusic;
 
-import java.util.ArrayList;
-import java.util.List;
-
-
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.MediaStore;
+
+import java.util.ArrayList;
 
 public class MusicList {
     public static ArrayList<Music> getMusicData(Context context) {
         ArrayList<Music> musicList = new ArrayList<Music>();
         ContentResolver cr = context.getContentResolver();
         if (cr != null) {
-            // 获取所有歌曲
+            // Get all the music
             Cursor cursor = cr.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null,
                     MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
             if (null == cursor) {

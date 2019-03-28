@@ -69,20 +69,20 @@
                 android:id="@+id/btn_pre"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="上一曲" />
+                android:text="@string/pre_music" />
 
             <Button
                 android:id="@+id/btn_play"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:onClick="play"
-                android:text="播放" />
+                android:text="@string/play" />
 
             <Button
                 android:id="@+id/btn_next"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="下一曲" />
+                android:text="@string/next_music" />
         </LinearLayout>
 
         <LinearLayout

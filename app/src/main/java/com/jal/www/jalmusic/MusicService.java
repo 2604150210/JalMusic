@@ -27,7 +27,7 @@ public class MusicService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
 
-        //当执行完了onCreate后，就会执行onBind把操作歌曲的方法返回
+        //When onCreate() is executed, onBind() will be executed to return the method of operating the music.
         return new MyBinder();
     }
 
@@ -56,7 +56,7 @@ public class MusicService extends Service {
     void prepare(){
         path = music.getUrl();
         Log.i(TAG,"path:"+path);
-        player = new MediaPlayer();//这里只执行一次，用于准备播放器
+        player = new MediaPlayer();//This is only done once, used to prepare the player.
         if (lastPlayer!=null){
             lastPlayer.stop();
             lastPlayer.release();
@@ -66,10 +66,10 @@ public class MusicService extends Service {
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         try {
             Log.i(TAG,path);
-            player.setDataSource(path); //准备资源
+            player.setDataSource(path); //Prepare resources
             player.prepare();
             player.start();
-            Log.i(TAG, "准备播放音乐");
+            Log.i(TAG, "Ready to play music");
         } catch (IOException e) {
             Log.i(TAG,"ERROR");
             e.printStackTrace();
@@ -86,26 +86,24 @@ public class MusicService extends Service {
         });
     }
 
-    //该方法包含关于歌曲的操作
+    //This method contains operations on music
     public class MyBinder extends Binder {
 
-        //判断是否处于播放状态
         public boolean isPlaying(){
             return player.isPlaying();
         }
 
-        //播放或暂停歌曲
         public void play() {
             if (player.isPlaying()) {
                 player.pause();
-                Log.i(TAG, "播放停止");
+                Log.i(TAG, "Play stop");
             } else {
                 player.start();
-                Log.i(TAG, "播放开始");
+                Log.i(TAG, "Play start");
             }
         }
 
-        //播放下一曲
+        //Play the next music
         public void next(int type){
             position+=type;
             position = (position + listMusic.size())%listMusic.size();
@@ -113,23 +111,22 @@ public class MusicService extends Service {
             prepare();
         }
 
-        //返回歌曲的长度，单位为毫秒
+        //Returns the length of the music in milliseconds
         public int getDuration(){
-//            Log.i(TAG, "歌曲长度"+player.getDuration());
             return player.getDuration();
         }
 
-        //返回歌曲的标题
+        //Return the name of the music
         public String getName(){
             return music.getName();
         }
 
-        //返回歌曲目前的进度，单位为毫秒
+        //Returns the current progress of the music in milliseconds
         public int getCurrenPostion(){
             return player.getCurrentPosition();
         }
 
-        //设置歌曲播放的进度，单位为毫秒
+        //Set the progress of music playback in milliseconds
         public void seekTo(int mesc){
             player.seekTo(mesc);
         }

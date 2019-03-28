@@ -3,9 +3,7 @@ package com.jal.www.jalmusic;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.io.Serializable;
-import java.util.Objects;
-
+//The Music class implements the Parcelable interface and can be serialized.
 public  class Music implements Parcelable {
     private String title;
     private String singer;
@@ -14,7 +12,12 @@ public  class Music implements Parcelable {
     private long size;
     private long time;
     private String name;
+
+    //Non-parametric construction
     public Music(){};
+
+
+//    Deserialization
     protected Music(Parcel in) {
         title = in.readString();
         singer = in.readString();
@@ -25,6 +28,7 @@ public  class Music implements Parcelable {
         name = in.readString();
     }
 
+//    Serialization
     public static final Creator<Music> CREATOR = new Creator<Music>() {
         @Override
         public Music createFromParcel(Parcel in) {

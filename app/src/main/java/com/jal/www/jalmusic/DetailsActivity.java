@@ -28,6 +28,7 @@ import java.text.DateFormat;
 
 public class DetailsActivity extends AppCompatActivity implements View.OnClickListener {
     private MyConnection conn;
+    private String TAG = "DetailsActivity";
     private Button btn_pre;
     private Button btn_play;
     private Button btn_next;
@@ -37,7 +38,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     private TextView tv_title,tv_cur_time,tv_total_time;
     private MusicService.MyBinder musicControl;
     private static final int UPDATE_UI = 0;
-    private AudioManager audioManager;
     private Animation animation;
     //使用handler定时更新进度条
     private Handler handler = new Handler() {
@@ -54,27 +54,26 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
-        audioManager =(AudioManager)getSystemService(Context.AUDIO_SERVICE);
-
         Intent intent = new Intent(this, MusicService.class);
         Bundle bundle = getIntent().getExtras();
         intent.putExtras(bundle);
-        conn = new MyConnection();//使用混合的方法开启服务，
+        conn = new MyConnection();
         startService(intent);
         bindService(intent, conn, BIND_AUTO_CREATE);
-        imageView = (MusicButton) findViewById(R.id.imageview);//动画
         bindViews();
+        //Mixed mode binding service
     }
 
     private void bindViews() {
-        btn_pre = (Button) findViewById(R.id.btn_pre);
-        btn_play = (Button) findViewById(R.id.btn_play);
-        btn_next = (Button) findViewById(R.id.btn_next);
-        btn_return = (ImageView) findViewById(R.id.btn_return);
-        seekBar = (SeekBar) findViewById(R.id.sb);
-        tv_title = (TextView) findViewById(R.id.tv_title);
-        tv_cur_time = (TextView)findViewById(R.id.tv_cur_time);
-        tv_total_time = (TextView)findViewById(R.id.tv_total_time);
+        btn_pre = findViewById(R.id.btn_pre);
+        btn_play = findViewById(R.id.btn_play);
+        btn_next = findViewById(R.id.btn_next);
+        btn_return = findViewById(R.id.btn_return);
+        seekBar =  findViewById(R.id.sb);
+        tv_title = findViewById(R.id.tv_title);
+        tv_cur_time =findViewById(R.id.tv_cur_time);
+        tv_total_time = findViewById(R.id.tv_total_time);
+        imageView = findViewById(R.id.imageview);
         btn_pre.setOnClickListener(this);
         btn_play.setOnClickListener(this);
         btn_next.setOnClickListener(this);
@@ -83,7 +82,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                //进度条改变
+                //Progress bar change
                 if (fromUser) {
                     musicControl.seekTo(progress);
                 }
@@ -91,12 +90,12 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                //开始触摸进度条
+                //Start touching the progress bar
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                //停止触摸进度条
+                //Stop touching the progress bar
             }
         });
     }
@@ -120,17 +119,16 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
                 break;
         }
     }
-    private String TAG = "DetailsActivity";
 
     private class MyConnection implements ServiceConnection {
 
-        //服务启动完成后会进入到这个方法
+        //This method will be entered after the service is started.
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.i(TAG, "::MyConnection::onServiceConnected");
-            //获得service中的MyBinder
+            //Get MyBinder in service
             musicControl = (MusicService.MyBinder) service;
-            //更新按钮的文字
+            //Update button text
             updatePlayText();
             updateUI();
         }
@@ -145,7 +143,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onResume() {
         super.onResume();
-        //进入到界面后开始更新进度条
+        //Start the update UI bar after entering the interface
         if (musicControl != null) {
             handler.sendEmptyMessage(UPDATE_UI);
         }
@@ -154,52 +152,50 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //退出应用后与service解除绑定
+        //Unbind from the service after exiting
         unbindService(conn);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        //停止更新进度条的进度
+        //Stop the progress of the update progress bar
         handler.removeCallbacksAndMessages(null);
     }
 
-    //更新进度条
+    //Update progress bar
     private void updateProgress() {
         int currenPostion = musicControl.getCurrenPostion();
         seekBar.setProgress(currenPostion);
     }
 
 
-    //更新按钮的文字
+    //Update button text
     public void updatePlayText() {
         if (musicControl.isPlaying()) {
-//            imageView.startAnimation(animation);
             imageView.play();
 
             btn_play.setText("暂停");
         } else {
-//            imageView.clearAnimation();
             imageView.pause();
 
             btn_play.setText("播放");
         }
     }
 
-    //调用MyBinder中的play()方法
+    //Call the play() method in MyBinder
     public void play(View view) {
         musicControl.play();
         updatePlayText();
     }
 
-    //调用MyBinder中的next()方法
+    //next music
     public void next(View view) {
         musicControl.next(1);
         updatePlayText();
     }
 
-    //调用MyBinder中的next()方法
+    //previous music
     public void pre(View view) {
         musicControl.next(-1);
         updatePlayText();
@@ -207,10 +203,10 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
     public void updateUI(){
 
-        //设置进度条的最大值
+        //Set the maximum value of the progress bar
         int cur_time = musicControl.getCurrenPostion(), total_time = musicControl.getDuration();
         seekBar.setMax(total_time);
-        //设置进度条的进度
+        //Set the progress of the progress bar
         seekBar.setProgress(cur_time);
 
         String str = musicControl.getName();
@@ -220,7 +216,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
         updateProgress();
 
-        //使用Handler每500毫秒更新一次进度条
+        //Update the UI bar every 500 milliseconds using Handler
         handler.sendEmptyMessageDelayed(UPDATE_UI, 500);
     }
 
