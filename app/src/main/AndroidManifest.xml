@@ -28,6 +28,7 @@
         <receiver android:name=".JalMusicWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="main_activity_update_ui" />
             </intent-filter>
 
             <meta-data

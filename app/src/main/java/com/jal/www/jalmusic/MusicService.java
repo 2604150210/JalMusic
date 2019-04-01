@@ -30,6 +30,12 @@ public class MusicService extends Service {
     public static String ACTION = "to_service";
     public static String KEY_USR_ACTION = "key_usr_action";
     public static final int ACTION_PRE = 0, ACTION_PLAY_PAUSE = 1, ACTION_NEXT = 2;
+    public static String MAIN_UPDATE_UI = "main_activity_update_ui";  //Action
+    public static String KEY_MAIN_ACTIVITY_UI_BTN = "main_activity_ui_btn_key"; //putExtra中传送当前播放状态的key
+    public static String KEY_MAIN_ACTIVITY_UI_TEXT = "main_activity_ui_text_key"; //putextra中传送TextView的key
+    public static final int  VAL_UPDATE_UI_PLAY = 1,VAL_UPDATE_UI_PAUSE =2;//当前歌曲的播放状态
+
+
     @Override
     public IBinder onBind(Intent intent) {
 
@@ -58,7 +64,12 @@ public class MusicService extends Service {
         }
         return super.onStartCommand(intent, flags, startId);
     }
-
+    private void postState(Context context, int state,int songid) {
+        Intent actionIntent = new Intent(MusicService.MAIN_UPDATE_UI);
+        actionIntent.putExtra(MusicService.KEY_MAIN_ACTIVITY_UI_BTN,state);
+        actionIntent.putExtra(MusicService.KEY_MAIN_ACTIVITY_UI_TEXT, songid);
+        context.sendBroadcast(actionIntent);
+    }
     void prepare(){
         music = listMusic.get(position);
         path = music.getUrl();
@@ -81,6 +92,7 @@ public class MusicService extends Service {
             Log.i(TAG,"ERROR");
             e.printStackTrace();
         }
+        postState(getApplicationContext(), VAL_UPDATE_UI_PLAY,position);
         player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -168,9 +180,11 @@ public class MusicService extends Service {
     public void play() {
         if (player.isPlaying()) {
             player.pause();
+            postState(getApplicationContext(), VAL_UPDATE_UI_PAUSE,position);
             Log.i(TAG, "Play stop");
         } else {
             player.start();
+            postState(getApplicationContext(), VAL_UPDATE_UI_PLAY,position);
             Log.i(TAG, "Play start");
         }
     }
