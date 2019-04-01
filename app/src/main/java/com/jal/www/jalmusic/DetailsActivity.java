@@ -1,8 +1,10 @@
 package com.jal.www.jalmusic;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -22,9 +24,11 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
+import java.util.ArrayList;
 
 public class DetailsActivity extends AppCompatActivity implements View.OnClickListener {
     private MyConnection conn;
@@ -39,6 +43,9 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     private MusicService.MyBinder musicControl;
     private static final int UPDATE_UI = 0;
     private Animation animation;
+    private ArrayList<Music> listMusic;
+
+    MyReceiver myReceiver;
     //使用handler定时更新进度条
     private Handler handler = new Handler() {
         @Override
@@ -50,19 +57,63 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
             }
         }
     };
+
+    public DetailsActivity() {
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
+        listMusic = MusicList.getMusicData(this);
         Intent intent = new Intent(this, MusicService.class);
         Bundle bundle = getIntent().getExtras();
         intent.putExtras(bundle);
         conn = new MyConnection();
         startService(intent);
         bindService(intent, conn, BIND_AUTO_CREATE);
+
+        myReceiver = new MyReceiver(new Handler());
+        IntentFilter itFilter = new IntentFilter();
+        itFilter.addAction(MusicService.MAIN_UPDATE_UI);
+        registerReceiver(myReceiver, itFilter);
+
         bindViews();
         //Mixed mode binding service
     }
+    public class MyReceiver extends BroadcastReceiver {
+        private final Handler handler;
+        // Handler used to execute code on the UI thread
+        public MyReceiver(Handler handler) {
+            this.handler = handler;
+        }
+
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            // Post the UI updating code to our Handler
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    int play_pause = intent.getIntExtra(MusicService.KEY_MAIN_ACTIVITY_UI_BTN, -1);
+                    int songid = intent.getIntExtra(MusicService.KEY_MAIN_ACTIVITY_UI_TEXT, -1);
+                    tv_title.setText(listMusic.get(songid).getName());
+                    switch (play_pause) {
+                        case MusicService.VAL_UPDATE_UI_PLAY:
+                            btn_play.setText(R.string.pause);
+                            imageView.play();
+                            break;
+                        case MusicService.VAL_UPDATE_UI_PAUSE:
+                            btn_play.setText(R.string.play);
+                            imageView.pause();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+        }
+    }
+
 
     private void bindViews() {
         btn_pre = findViewById(R.id.btn_pre);
@@ -172,14 +223,12 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
 
     //Update button text
     public void updatePlayText() {
-        if (musicControl.isPlaying()) {
+        if(MusicService.mlastPlayer!=null &&MusicService.mlastPlayer.isPlaying()){
             imageView.play();
-
-            btn_play.setText("暂停");
-        } else {
+            btn_play.setText(R.string.pause);
+        }else{
             imageView.pause();
-
-            btn_play.setText("播放");
+            btn_play.setText(R.string.play);
         }
     }
 

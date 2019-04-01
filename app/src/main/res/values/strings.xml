@@ -6,7 +6,10 @@
     <string name="username">用户名:</string>
     <string name="pre_music">上一曲</string>
     <string name="play">播放</string>
+    <string name="pause">暂停</string>
     <string name="next_music">下一曲</string>
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
+    <string name="title_activity_widget_configure">WidgetConfigureActivity</string>
+    <string name="submit">提交</string>
 </resources>

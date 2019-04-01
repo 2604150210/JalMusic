@@ -94,10 +94,12 @@ public class JalMusicWidget extends AppWidgetProvider {
         }
         //设定按钮图片
         if (play_pause) {
-            remoteView.setTextViewText(R.id.play_pause, "暂停");
+            String s = context.getResources().getString(R.string.pause);
+            remoteView.setTextViewText(R.id.play_pause, s);
 //            remoteView.setImageViewResource(R.id.play_pause, R.drawable.car_musiccard_pause);
         }else {
-            remoteView.setTextViewText(R.id.play_pause, "播放");
+            String s = context.getResources().getString(R.string.play);
+            remoteView.setTextViewText(R.id.play_pause, s);
 //            remoteView.setImageViewResource(R.id.play_pause, R.drawable.car_musiccard_play);
         }
         ComponentName componentName = new ComponentName(context,JalMusicWidget.class);
