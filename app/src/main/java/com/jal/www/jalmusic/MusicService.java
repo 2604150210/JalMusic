@@ -1,8 +1,10 @@
 package com.jal.www.jalmusic;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
@@ -15,15 +17,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class MusicService extends Service {
+    static MediaPlayer mlastPlayer;
+    static int mPosition;
+    private int position;
     private String path = "";
     private String TAG = "MusicServiceLog";
     private MediaPlayer player;
-    static MediaPlayer lastPlayer;
-    static Music lastMusic;
     private Music music;
     private ArrayList<Music>listMusic;
-    private Context mContext;
-    private int position;
+    private Context context;
+
+    public static String ACTION = "to_service";
+    public static String KEY_USR_ACTION = "key_usr_action";
+    public static final int ACTION_PRE = 0, ACTION_PLAY_PAUSE = 1, ACTION_NEXT = 2;
     @Override
     public IBinder onBind(Intent intent) {
 
@@ -34,35 +40,36 @@ public class MusicService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        mContext = getApplicationContext();
+        context = getApplicationContext();
+        listMusic = MusicList.getMusicData(context);
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ACTION);
+        registerReceiver(receiver, intentFilter);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Bundle bundle = intent.getExtras();
-        listMusic =  bundle.getParcelableArrayList("listMusic");
         position = bundle.getInt("position");
-        Log.i(TAG,"position:"+position);
-        music = listMusic.get(position);
-        Log.i(TAG, music.toString());
-        if (lastPlayer == null || lastMusic == null || !lastMusic.equals(music)){
+        if (mlastPlayer == null || mPosition != position){
             prepare();
         }else{
-            player = lastPlayer;
+            player = mlastPlayer;
         }
         return super.onStartCommand(intent, flags, startId);
     }
 
     void prepare(){
+        music = listMusic.get(position);
         path = music.getUrl();
         Log.i(TAG,"path:"+path);
         player = new MediaPlayer();//This is only done once, used to prepare the player.
-        if (lastPlayer!=null){
-            lastPlayer.stop();
-            lastPlayer.release();
+        if (mlastPlayer !=null){
+            mlastPlayer.stop();
+            mlastPlayer.release();
         }
-        lastPlayer = player;
-        lastMusic = music;
+        mlastPlayer = player;
+        mPosition = position;
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         try {
             Log.i(TAG,path);
@@ -77,10 +84,10 @@ public class MusicService extends Service {
         player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                position+=1;
+                position +=1;
                 position = (position + listMusic.size())%listMusic.size();
                 music = listMusic.get(position);
-                Toast.makeText(mContext, "自动为您切换下一首:"+music.getName(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "自动为您切换下一首:"+music.getName(), Toast.LENGTH_SHORT).show();
                 prepare();
             }
         });
@@ -105,9 +112,9 @@ public class MusicService extends Service {
 
         //Play the next music
         public void next(int type){
-            position+=type;
-            position = (position + listMusic.size())%listMusic.size();
-            music = listMusic.get(position);
+            mPosition +=type;
+            mPosition = (mPosition + listMusic.size())%listMusic.size();
+            music = listMusic.get(mPosition);
             prepare();
         }
 
@@ -131,4 +138,50 @@ public class MusicService extends Service {
             player.seekTo(mesc);
         }
     }
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action  = intent.getAction();
+            if (ACTION.equals(action)) {
+                int widget_action = intent.getIntExtra(KEY_USR_ACTION, -1);
+
+                switch (widget_action) {
+                    case ACTION_PRE:
+                        next(-1);
+                        Log.d(TAG,"action_prev");
+                        break;
+                    case ACTION_PLAY_PAUSE:
+                        play();
+                        break;
+                    case ACTION_NEXT:
+                        next(1);
+                        Log.d(TAG,"action_next");
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    };
+
+    public void play() {
+        if (player.isPlaying()) {
+            player.pause();
+            Log.i(TAG, "Play stop");
+        } else {
+            player.start();
+            Log.i(TAG, "Play start");
+        }
+    }
+
+    //Play the next music
+    public void next(int type){
+        position +=type;
+        position = (position + listMusic.size())%listMusic.size();
+        music = listMusic.get(position);
+        prepare();
+    }
+
+
 }

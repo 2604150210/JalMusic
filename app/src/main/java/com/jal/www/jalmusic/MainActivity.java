@@ -1,10 +1,16 @@
 package com.jal.www.jalmusic;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.nfc.Tag;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -28,10 +34,25 @@ public class MainActivity extends AppCompatActivity {
     private TextView tv_main_title;
     private ArrayList<Music> listMusic;
     private String TAG = "MainActivityLog";
+    static String ACTION = "changeMusic";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        Notification.Builder mBuilder = new Notification.Builder(this);
+        mBuilder.setContentTitle("测试标题")
+                .setContentText("测试内容")
+                .setContentIntent(PendingIntent.getActivities(this,0,new Intent[]{new Intent(this,DetailsActivity.class)},0))
+                .setTicker("测试通知来啦")
+                .setWhen(System.currentTimeMillis())
+                .setPriority(Notification.PRIORITY_MAX)
+                .setOngoing(false)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setSmallIcon(R.mipmap.zjalmusic).
+                setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.jalmusic));
+        Notification notification = mBuilder.build();
+        manager.notify(1,notification);
 
         requestPermission();
      }
@@ -60,17 +81,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        if (MusicService.lastPlayer != null && MusicService.lastMusic != null){
+        if (MusicService.mlastPlayer != null){
             cur_music.setVisibility(View.VISIBLE);
             tv_main_title = findViewById(R.id.tv_main_title);
-            tv_main_title.setText(MusicService.lastMusic.getName());
+            tv_main_title.setText(listMusic.get(MusicService.mPosition).getName());
             cur_music.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Bundle bundle = new Bundle();
-                    bundle.putParcelableArrayList("listMusic",listMusic);
-                    int position = listMusic.indexOf(MusicService.lastMusic);
-                    System.out.println("MainActivity:position="+position);
+                    int position = MusicService.mPosition;
                     bundle.putInt("position", position);
                     Intent intent = new Intent();
                     intent.putExtras(bundle);

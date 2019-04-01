@@ -183,21 +183,30 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-    //Call the play() method in MyBinder
     public void play(View view) {
-        musicControl.play();
+        Intent intent = new Intent(MusicService.ACTION);
+        Bundle bundle = new Bundle();
+        bundle.putInt(MusicService.KEY_USR_ACTION,MusicService.ACTION_PLAY_PAUSE);
+        intent.putExtras(bundle);
+        sendBroadcast(intent);
         updatePlayText();
     }
 
-    //next music
     public void next(View view) {
-        musicControl.next(1);
+        Intent intent = new Intent(MusicService.ACTION);
+        Bundle bundle = new Bundle();
+        bundle.putInt(MusicService.KEY_USR_ACTION,MusicService.ACTION_NEXT);
+        intent.putExtras(bundle);
+        sendBroadcast(intent);
         updatePlayText();
     }
 
-    //previous music
     public void pre(View view) {
-        musicControl.next(-1);
+        Intent intent = new Intent(MusicService.ACTION);
+        Bundle bundle = new Bundle();
+        bundle.putInt(MusicService.KEY_USR_ACTION,MusicService.ACTION_PRE);
+        intent.putExtras(bundle);
+        sendBroadcast(intent);
         updatePlayText();
     }
 
