@@ -2,6 +2,7 @@ package com.jal.www.jalmusic;
 
 import android.Manifest;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -11,11 +12,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -50,33 +54,6 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(myReceiver, itFilter);
         requestPermission();
      }
-    private void initNotificationBar(){
-        Notification.Builder mBuilder = new Notification.Builder(this);
-        mBuilder.setContentIntent(PendingIntent.getActivities(this,0,new Intent[]{new Intent(this,DetailsActivity.class)},0))
-                .setWhen(System.currentTimeMillis())
-                .setOngoing(false)
-                .setVisibility(Notification.VISIBILITY_PUBLIC)
-                .setDefaults(Notification.DEFAULT_ALL)
-                .setSmallIcon(R.mipmap.zjalmusic).
-                setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.jalmusic));
-        Notification notification = mBuilder.build();
-
-        RemoteViews remoteView = new RemoteViews(getPackageName(),R.layout.notification);
-        remoteView.setOnClickPendingIntent(R.id.play_pause,getPendingIntent(this, R.id.play_pause));
-        remoteView.setOnClickPendingIntent(R.id.prev_song, getPendingIntent(this, R.id.prev_song));
-        remoteView.setOnClickPendingIntent(R.id.next_song, getPendingIntent(this, R.id.next_song));
-        remoteView.setTextViewText(R.id.notification_title, listMusic.get(MusicService.mPosition).getName());
-        if (MusicService.mlastPlayer != null && MusicService.mlastPlayer.isPlaying()) {
-            String s = getResources().getString(R.string.pause);
-            remoteView.setTextViewText(R.id.play_pause, s);
-        }else {
-            String s = getResources().getString(R.string.play);
-            remoteView.setTextViewText(R.id.play_pause, s);
-        }
-        notification.contentView = remoteView;
-        NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-        manager.notify(1,notification);
-    }
     private void initView() {
         mContext = getApplicationContext();
         listView = this.findViewById(R.id.listView1);
@@ -98,17 +75,9 @@ public class MainActivity extends AppCompatActivity {
         });
         cur_music = findViewById(R.id.cur_music);
         music_isPlay = findViewById(R.id.music_isPlay);
-        initNotificationBar();
 
     }
-    private PendingIntent getPendingIntent(Context context, int buttonId) {
-        Intent intent = new Intent();
-        intent.setClass(context, JalMusicWidget.class);
-        intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
-        intent.setData(Uri.parse(""+buttonId));
-        PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
-        return pi;
-    }
+
     private class MyReceiver extends BroadcastReceiver {
         private final Handler handler;
         // Handler used to execute code on the UI thread

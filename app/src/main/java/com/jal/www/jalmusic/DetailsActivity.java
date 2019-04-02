@@ -76,7 +76,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         myReceiver = new MyReceiver(new Handler());
         IntentFilter itFilter = new IntentFilter();
         itFilter.addAction(MusicService.MAIN_UPDATE_UI);
-        registerReceiver(myReceiver, itFilter);
+        getApplicationContext().registerReceiver(myReceiver, itFilter);
 
         bindViews();
         //Mixed mode binding service
@@ -205,6 +205,7 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
         super.onDestroy();
         //Unbind from the service after exiting
         unbindService(conn);
+        getApplicationContext().unregisterReceiver(myReceiver);
     }
 
     @Override

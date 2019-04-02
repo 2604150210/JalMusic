@@ -35,10 +35,6 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/jal_music_widget_info" />
         </receiver>
-        <receiver
-            android:name=".NotificationReceiver"
-            android:enabled="true"
-            android:exported="true"></receiver>
     </application>
 
 </manifest>

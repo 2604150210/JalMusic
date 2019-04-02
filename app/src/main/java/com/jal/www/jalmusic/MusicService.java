@@ -1,16 +1,27 @@
 package com.jal.www.jalmusic;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -26,7 +37,8 @@ public class MusicService extends Service {
     private Music music;
     private ArrayList<Music>listMusic;
     private Context context;
-
+    private RemoteViews remoteView;
+    private Notification notification;
     public static String ACTION = "to_service";
     public static String KEY_USR_ACTION = "key_usr_action";
     public static final int ACTION_PRE = 0, ACTION_PLAY_PAUSE = 1, ACTION_NEXT = 2;
@@ -55,6 +67,7 @@ public class MusicService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        initNotificationBar();
         Bundle bundle = intent.getExtras();
         position = bundle.getInt("position");
         if (mlastPlayer == null || mPosition != position){
@@ -68,7 +81,69 @@ public class MusicService extends Service {
         Intent actionIntent = new Intent(MusicService.MAIN_UPDATE_UI);
         actionIntent.putExtra(MusicService.KEY_MAIN_ACTIVITY_UI_BTN,state);
         actionIntent.putExtra(MusicService.KEY_MAIN_ACTIVITY_UI_TEXT, songid);
+        updateNotification();
         context.sendBroadcast(actionIntent);
+    }
+    private void initNotificationBar(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            // 通知渠道的id 这个地方只要一直即可
+            String id = "111111";
+            // 用户可以看到的通知渠道的名字.
+            CharSequence name = "notification channel";
+            // 用户可以看到的通知渠道的描述
+            String description = "notification description";
+            int importance = NotificationManager.IMPORTANCE_LOW;
+            NotificationChannel mChannel = new NotificationChannel(id, name, importance);
+            // 配置通知渠道的属性
+            mChannel.setDescription(description);
+            mChannel.setLightColor(Color.RED);
+            mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+            //最后在notificationmanager中创建该通知渠道
+            mNotificationManager.createNotificationChannel(mChannel);
+        }
+        NotificationCompat.Builder  mBuilder = new NotificationCompat.Builder(this, "111111");
+        mBuilder.setContentIntent(PendingIntent.getActivities(this,0,new Intent[]{new Intent(this,DetailsActivity.class)},0))
+                .setWhen(System.currentTimeMillis())
+                .setOngoing(false)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setSmallIcon(R.mipmap.zjalmusic).
+                setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.jalmusic));
+        notification = mBuilder.build();
+
+        remoteView = new RemoteViews(getPackageName(),R.layout.notification);
+        remoteView.setOnClickPendingIntent(R.id.play_pause,getPendingIntent(this, R.id.play_pause));
+        remoteView.setOnClickPendingIntent(R.id.prev_song, getPendingIntent(this, R.id.prev_song));
+        remoteView.setOnClickPendingIntent(R.id.next_song, getPendingIntent(this, R.id.next_song));
+        updateNotification();
+
+
+
+    }
+
+    private void updateNotification() {
+        Log.i(TAG, "updateNotification");
+        remoteView.setTextViewText(R.id.notification_title, listMusic.get(MusicService.mPosition).getName());
+        if (MusicService.mlastPlayer != null && MusicService.mlastPlayer.isPlaying()) {
+            String s = getResources().getString(R.string.pause);
+            remoteView.setTextViewText(R.id.play_pause, s);
+        }else {
+            String s = getResources().getString(R.string.play);
+            remoteView.setTextViewText(R.id.play_pause, s);
+        }
+        notification.contentView = remoteView;
+        NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        manager.notify(1,notification);
+    }
+
+    private PendingIntent getPendingIntent(Context context, int buttonId) {
+        Intent intent = new Intent();
+        intent.setClass(context, JalMusicWidget.class);
+        intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
+        intent.setData(Uri.parse(""+buttonId));
+        PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return pi;
     }
     void prepare(){
         music = listMusic.get(position);
