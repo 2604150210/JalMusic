@@ -22,10 +22,12 @@ public class JalMusicWidget extends AppWidgetProvider {
     private ArrayList<Music> listMusic;
 
 
-//    @Override
-//    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-//        pushUpdate(context,appWidgetManager);
-//    }
+    @Override
+    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+        if (listMusic == null)
+            listMusic = MusicList.getMusicData(context);
+        pushUpdate(context, AppWidgetManager.getInstance(context), listMusic.get(0).getName(),true);
+    }
 
     @Override
     public void onEnabled(Context context) {
@@ -42,7 +44,8 @@ public class JalMusicWidget extends AppWidgetProvider {
         context.sendBroadcast(actionIntent);
     }
     public void onReceive(Context context, Intent intent) {
-        listMusic = MusicList.getMusicData(context);
+        if (listMusic == null)
+             listMusic = MusicList.getMusicData(context);
         String action = intent.getAction();
         if (intent.hasCategory(Intent.CATEGORY_ALTERNATIVE)) {
             Uri data = intent.getData();

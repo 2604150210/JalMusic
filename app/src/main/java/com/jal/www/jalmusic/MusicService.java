@@ -6,7 +6,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -43,9 +42,9 @@ public class MusicService extends Service {
     public static String KEY_USR_ACTION = "key_usr_action";
     public static final int ACTION_PRE = 0, ACTION_PLAY_PAUSE = 1, ACTION_NEXT = 2;
     public static String MAIN_UPDATE_UI = "main_activity_update_ui";  //Action
-    public static String KEY_MAIN_ACTIVITY_UI_BTN = "main_activity_ui_btn_key"; //putExtra中传送当前播放状态的key
-    public static String KEY_MAIN_ACTIVITY_UI_TEXT = "main_activity_ui_text_key"; //putextra中传送TextView的key
-    public static final int  VAL_UPDATE_UI_PLAY = 1,VAL_UPDATE_UI_PAUSE =2;//当前歌曲的播放状态
+    public static String KEY_MAIN_ACTIVITY_UI_BTN = "main_activity_ui_btn_key";
+    public static String KEY_MAIN_ACTIVITY_UI_TEXT = "main_activity_ui_text_key";
+    public static final int  VAL_UPDATE_UI_PLAY = 1,VAL_UPDATE_UI_PAUSE =2;
 
 
     @Override
@@ -87,19 +86,14 @@ public class MusicService extends Service {
     private void initNotificationBar(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            // 通知渠道的id 这个地方只要一直即可
             String id = "111111";
-            // 用户可以看到的通知渠道的名字.
             CharSequence name = "notification channel";
-            // 用户可以看到的通知渠道的描述
             String description = "notification description";
             int importance = NotificationManager.IMPORTANCE_LOW;
             NotificationChannel mChannel = new NotificationChannel(id, name, importance);
-            // 配置通知渠道的属性
             mChannel.setDescription(description);
             mChannel.setLightColor(Color.RED);
             mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
-            //最后在notificationmanager中创建该通知渠道
             mNotificationManager.createNotificationChannel(mChannel);
         }
         NotificationCompat.Builder  mBuilder = new NotificationCompat.Builder(this, "111111");
@@ -117,9 +111,6 @@ public class MusicService extends Service {
         remoteView.setOnClickPendingIntent(R.id.prev_song, getPendingIntent(this, R.id.prev_song));
         remoteView.setOnClickPendingIntent(R.id.next_song, getPendingIntent(this, R.id.next_song));
         updateNotification();
-
-
-
     }
 
     private void updateNotification() {

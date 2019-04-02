@@ -1,25 +1,15 @@
 package com.jal.www.jalmusic;
 
 import android.Manifest;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -27,7 +17,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,12 +26,9 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     private ListView listView;
     private LinearLayout cur_music;
-    private Context mContext;
     private TextView tv_main_title;
-    private TextView music_isPlay;
     private ArrayList<Music> listMusic;
     private String TAG = "MainActivityLog";
-    static String ACTION = "changeMusic";
     private MyReceiver myReceiver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
         requestPermission();
      }
     private void initView() {
-        mContext = getApplicationContext();
         listView = this.findViewById(R.id.listView1);
         listMusic = MusicList.getMusicData(getApplicationContext());
         Log.i(TAG, "listMusic.size()=="+listMusic.size());
@@ -74,8 +59,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         cur_music = findViewById(R.id.cur_music);
-        music_isPlay = findViewById(R.id.music_isPlay);
-
     }
 
     private class MyReceiver extends BroadcastReceiver {

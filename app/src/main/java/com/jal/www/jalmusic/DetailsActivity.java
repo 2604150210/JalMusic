@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -14,20 +13,12 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.LinearInterpolator;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
 import java.util.ArrayList;
 
 public class DetailsActivity extends AppCompatActivity implements View.OnClickListener {
@@ -42,11 +33,9 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     private TextView tv_title,tv_cur_time,tv_total_time;
     private MusicService.MyBinder musicControl;
     private static final int UPDATE_UI = 0;
-    private Animation animation;
     private ArrayList<Music> listMusic;
 
     MyReceiver myReceiver;
-    //使用handler定时更新进度条
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -83,7 +72,6 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
     }
     public class MyReceiver extends BroadcastReceiver {
         private final Handler handler;
-        // Handler used to execute code on the UI thread
         public MyReceiver(Handler handler) {
             this.handler = handler;
         }
