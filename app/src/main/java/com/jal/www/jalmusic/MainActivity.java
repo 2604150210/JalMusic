@@ -59,6 +59,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         cur_music = findViewById(R.id.cur_music);
+        tv_main_title = findViewById(R.id.tv_main_title);
+        if(MusicService.mlastPlayer != null){
+            tv_main_title.setText(listMusic.get(MusicService.mPosition).getName());
+        }
     }
 
     private class MyReceiver extends BroadcastReceiver {
