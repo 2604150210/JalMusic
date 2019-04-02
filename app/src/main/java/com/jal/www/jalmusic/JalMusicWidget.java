@@ -26,12 +26,15 @@ public class JalMusicWidget extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         if (listMusic == null)
             listMusic = MusicList.getMusicData(context);
-        pushUpdate(context, AppWidgetManager.getInstance(context), listMusic.get(0).getName(),true);
+        pushUpdate(context, AppWidgetManager.getInstance(context), listMusic.get(MusicService.mPosition).getName(),true);
     }
 
     @Override
     public void onEnabled(Context context) {
         // Enter relevant functionality for when the first widget is created
+        if (listMusic == null)
+            listMusic = MusicList.getMusicData(context);
+        pushUpdate(context, AppWidgetManager.getInstance(context), listMusic.get(MusicService.mPosition).getName(),true);
     }
 
     @Override
