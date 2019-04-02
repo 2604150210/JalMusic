@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -22,6 +23,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,27 +44,39 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-        Notification.Builder mBuilder = new Notification.Builder(this);
-        mBuilder.setContentTitle("测试标题")
-                .setContentText("测试内容")
-                .setContentIntent(PendingIntent.getActivities(this,0,new Intent[]{new Intent(this,DetailsActivity.class)},0))
-                .setTicker("测试通知来啦")
-                .setWhen(System.currentTimeMillis())
-                .setPriority(Notification.PRIORITY_MAX)
-                .setOngoing(false)
-                .setDefaults(Notification.DEFAULT_ALL)
-                .setSmallIcon(R.mipmap.zjalmusic).
-                setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.jalmusic));
-        Notification notification = mBuilder.build();
-        manager.notify(1,notification);
         myReceiver = new MyReceiver(new Handler());
         IntentFilter itFilter = new IntentFilter();
         itFilter.addAction(MusicService.MAIN_UPDATE_UI);
         registerReceiver(myReceiver, itFilter);
         requestPermission();
      }
+    private void initNotificationBar(){
+        Notification.Builder mBuilder = new Notification.Builder(this);
+        mBuilder.setContentIntent(PendingIntent.getActivities(this,0,new Intent[]{new Intent(this,DetailsActivity.class)},0))
+                .setWhen(System.currentTimeMillis())
+                .setOngoing(false)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setSmallIcon(R.mipmap.zjalmusic).
+                setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.jalmusic));
+        Notification notification = mBuilder.build();
 
+        RemoteViews remoteView = new RemoteViews(getPackageName(),R.layout.notification);
+        remoteView.setOnClickPendingIntent(R.id.play_pause,getPendingIntent(this, R.id.play_pause));
+        remoteView.setOnClickPendingIntent(R.id.prev_song, getPendingIntent(this, R.id.prev_song));
+        remoteView.setOnClickPendingIntent(R.id.next_song, getPendingIntent(this, R.id.next_song));
+        remoteView.setTextViewText(R.id.notification_title, listMusic.get(MusicService.mPosition).getName());
+        if (MusicService.mlastPlayer != null && MusicService.mlastPlayer.isPlaying()) {
+            String s = getResources().getString(R.string.pause);
+            remoteView.setTextViewText(R.id.play_pause, s);
+        }else {
+            String s = getResources().getString(R.string.play);
+            remoteView.setTextViewText(R.id.play_pause, s);
+        }
+        notification.contentView = remoteView;
+        NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        manager.notify(1,notification);
+    }
     private void initView() {
         mContext = getApplicationContext();
         listView = this.findViewById(R.id.listView1);
@@ -84,6 +98,16 @@ public class MainActivity extends AppCompatActivity {
         });
         cur_music = findViewById(R.id.cur_music);
         music_isPlay = findViewById(R.id.music_isPlay);
+        initNotificationBar();
+
+    }
+    private PendingIntent getPendingIntent(Context context, int buttonId) {
+        Intent intent = new Intent();
+        intent.setClass(context, JalMusicWidget.class);
+        intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
+        intent.setData(Uri.parse(""+buttonId));
+        PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
+        return pi;
     }
     private class MyReceiver extends BroadcastReceiver {
         private final Handler handler;
