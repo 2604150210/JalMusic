@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -32,9 +33,11 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout cur_music;
     private Context mContext;
     private TextView tv_main_title;
+    private TextView music_isPlay;
     private ArrayList<Music> listMusic;
     private String TAG = "MainActivityLog";
     static String ACTION = "changeMusic";
+    private MyReceiver myReceiver;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,7 +56,10 @@ public class MainActivity extends AppCompatActivity {
                 setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.jalmusic));
         Notification notification = mBuilder.build();
         manager.notify(1,notification);
-
+        myReceiver = new MyReceiver(new Handler());
+        IntentFilter itFilter = new IntentFilter();
+        itFilter.addAction(MusicService.MAIN_UPDATE_UI);
+        registerReceiver(myReceiver, itFilter);
         requestPermission();
      }
 
@@ -77,10 +83,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         cur_music = findViewById(R.id.cur_music);
+        music_isPlay = findViewById(R.id.music_isPlay);
     }
+    private class MyReceiver extends BroadcastReceiver {
+        private final Handler handler;
+        // Handler used to execute code on the UI thread
+        public MyReceiver(Handler handler) {
+            this.handler = handler;
+        }
 
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            // Post the UI updating code to our Handler
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    initView();
+                }
+            });
+        }
+    }
     @Override
     protected void onResume() {
+        initView();
         if (MusicService.mlastPlayer != null){
             cur_music.setVisibility(View.VISIBLE);
             tv_main_title = findViewById(R.id.tv_main_title);

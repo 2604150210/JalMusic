@@ -4,14 +4,18 @@ import java.util.List;
 
 
 import android.content.Context;
+import android.graphics.drawable.BitmapDrawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class MusicAdapter extends BaseAdapter {
 
+    private static final String TAG = "MusicAdapterLog";
     private List<Music> listMusic;
     private Context context;
 
@@ -41,9 +45,15 @@ public class MusicAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null) {
+//        if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(
                     R.layout.music_item, null);
+//        }
+        if (MusicService.mlastPlayer != null && MusicService.mPosition == position){
+//            if (convertView == null) {
+                convertView = LayoutInflater.from(context).inflate(
+                        R.layout.music_item2, null);
+//            }
         }
         Music m = listMusic.get(position);
 
@@ -56,6 +66,13 @@ public class MusicAdapter extends BaseAdapter {
         TextView textMusicTime = (TextView) convertView
                 .findViewById(R.id.music_item_time);
         textMusicTime.setText(toTime((int) m.getTime()));
+
+        if (MusicService.mlastPlayer != null && MusicService.mPosition == position){
+            TextView music_isPlay = convertView.findViewById(R.id.music_isPlay);
+            if (music_isPlay != null)
+            music_isPlay.setText(R.string.play);
+        }
+
         return convertView;
     }
 
