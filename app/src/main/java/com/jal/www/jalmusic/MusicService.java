@@ -20,6 +20,9 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -38,6 +41,7 @@ public class MusicService extends Service {
     private Context context;
     private RemoteViews remoteView;
     private Notification notification;
+    private String notificationChannelID = "1";
     public static String ACTION = "to_service";
     public static String KEY_USR_ACTION = "key_usr_action";
     public static final int ACTION_PRE = 0, ACTION_PLAY_PAUSE = 1, ACTION_NEXT = 2;
@@ -45,7 +49,7 @@ public class MusicService extends Service {
     public static String KEY_MAIN_ACTIVITY_UI_BTN = "main_activity_ui_btn_key";
     public static String KEY_MAIN_ACTIVITY_UI_TEXT = "main_activity_ui_text_key";
     public static final int  VAL_UPDATE_UI_PLAY = 1,VAL_UPDATE_UI_PAUSE =2;
-
+    private int notifyId = 1;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -86,36 +90,28 @@ public class MusicService extends Service {
     private void initNotificationBar(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            String id = "111111";
             CharSequence name = "notification channel";
             String description = "notification description";
-            int importance = NotificationManager.IMPORTANCE_LOW;
-            NotificationChannel mChannel = new NotificationChannel(id, name, importance);
+            int importance = NotificationManager.IMPORTANCE_MIN;
+            NotificationChannel mChannel = new NotificationChannel(notificationChannelID, name, importance);
             mChannel.setDescription(description);
             mChannel.setLightColor(Color.RED);
             mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
             mNotificationManager.createNotificationChannel(mChannel);
         }
-        NotificationCompat.Builder  mBuilder = new NotificationCompat.Builder(this, "111111");
-        mBuilder.setContentIntent(PendingIntent.getActivities(this,0,new Intent[]{new Intent(this,DetailsActivity.class)},0))
-                .setWhen(System.currentTimeMillis())
-                .setOngoing(false)
-                .setVisibility(Notification.VISIBILITY_PUBLIC)
-                .setDefaults(Notification.DEFAULT_ALL)
-                .setSmallIcon(R.mipmap.zjalmusic).
-                setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.jalmusic));
-        notification = mBuilder.build();
-
+        NotificationCompat.Builder  mBuilder = new NotificationCompat.Builder(this, notificationChannelID);
+        Intent intent = new Intent(this, MainActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putInt("position", mPosition);
+        intent.putExtras(bundle);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,0, intent, 0);
         remoteView = new RemoteViews(getPackageName(),R.layout.notification);
+        String title = listMusic.get(MusicService.mPosition).getName();
+        Log.i(TAG, "updateNotification title = " + title);
+        remoteView.setTextViewText(R.id.notification_title, title);
         remoteView.setOnClickPendingIntent(R.id.play_pause,getPendingIntent(this, R.id.play_pause));
         remoteView.setOnClickPendingIntent(R.id.prev_song, getPendingIntent(this, R.id.prev_song));
         remoteView.setOnClickPendingIntent(R.id.next_song, getPendingIntent(this, R.id.next_song));
-        updateNotification();
-    }
-
-    private void updateNotification() {
-        Log.i(TAG, "updateNotification");
-        remoteView.setTextViewText(R.id.notification_title, listMusic.get(MusicService.mPosition).getName());
         if (MusicService.mlastPlayer != null && MusicService.mlastPlayer.isPlaying()) {
             String s = getResources().getString(R.string.pause);
             remoteView.setTextViewText(R.id.play_pause, s);
@@ -123,9 +119,36 @@ public class MusicService extends Service {
             String s = getResources().getString(R.string.play);
             remoteView.setTextViewText(R.id.play_pause, s);
         }
+        mBuilder.setContentIntent(pendingIntent)
+                .setContent(remoteView)
+                .setWhen(System.currentTimeMillis())
+                .setOngoing(false)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setDefaults(Notification.DEFAULT_LIGHTS)
+                .setSmallIcon(R.mipmap.zjalmusic)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.jalmusic));
+        notification = mBuilder.build();
+        notification.flags = Notification.FLAG_ONGOING_EVENT;
+        NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        manager.notify(notifyId,notification);
+        updateNotification();
+    }
+
+    private void updateNotification() {
+        String title = listMusic.get(MusicService.mPosition).getName();
+        Log.i(TAG, "updateNotification title = " + title);
+        remoteView.setTextViewText(R.id.notification_title, title);
+        if (MusicService.mlastPlayer != null && MusicService.mlastPlayer.isPlaying()) {
+            String s = getResources().getString(R.string.pause);
+            remoteView.setTextViewText(R.id.play_pause, s);
+        }else {
+            String s = getResources().getString(R.string.play);
+            remoteView.setTextViewText(R.id.play_pause, s);
+        }
+
         notification.contentView = remoteView;
         NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-        manager.notify(1,notification);
+        manager.notify(notifyId,notification);
     }
 
     private PendingIntent getPendingIntent(Context context, int buttonId) {
@@ -133,7 +156,7 @@ public class MusicService extends Service {
         intent.setClass(context, JalMusicWidget.class);
         intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
         intent.setData(Uri.parse(""+buttonId));
-        PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         return pi;
     }
     void prepare(){

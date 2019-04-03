@@ -69,8 +69,9 @@ public class MusicAdapter extends BaseAdapter {
 
         if (MusicService.mlastPlayer != null && MusicService.mPosition == position){
             TextView music_isPlay = convertView.findViewById(R.id.music_isPlay);
-            if (music_isPlay != null)
-            music_isPlay.setText(R.string.play);
+            if (music_isPlay != null){
+                music_isPlay.setText(MusicService.mlastPlayer.isPlaying()?R.string.play:R.string.pause);
+            }
         }
 
         return convertView;
