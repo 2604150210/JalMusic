@@ -1,4 +1,4 @@
-# JalMusic
+# JalMusic - 安卓音乐播放器（含小挂件、通知栏）
 Music Player
 
 # 2019/04/01
